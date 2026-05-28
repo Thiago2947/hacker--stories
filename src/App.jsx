@@ -1,5 +1,6 @@
 import * as React from 'react';
 import item from './componentes/item';
+import List from './componentes/List';
 // . significa o ditório atual
 // '/components' significa a pasta 'components'
 // ele busca esta pasta no diretório atual
@@ -23,37 +24,14 @@ const list = [
   },
 ];
 
-function Item({item}){
-  return (
-    <li key={item.objectID}>
-      <span>
-        <a href={item.url}>{item.title}<br/></a>
-      </span>
-      <span>{item.author}<br/></span>
-      <span>{item.num_comments}<br/></span>
-      <span>{item.points}<br/></span>
-      <br></br>
-    </li>
-  );
-}
-
-function List({list}){
-  return (
-    <ul>
-      {list.map(
-        function (item) {
-          return <Item key={item.objectID} item={item} />
-        }
-      )}
-    </ul>
-  );
-}
-
 function App(){
   return (
     <div>
 
       <h1>Minhas historias Hacker</h1>
+
+      {/* barra de busca */}
+
 
       <label htmlFor="search">Procurar:</label>
       <input type="text" id="search" />
