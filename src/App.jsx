@@ -1,10 +1,15 @@
-import * as React from 'react';
-import item from './componentes/item';
-import List from './componentes/List';
-// . significa o ditório atual
-// '/components' significa a pasta 'components'
-// ele busca esta pasta no diretório atual
+import React, {useState} from 'react';
+import Item from './components/Item';
+import List from './components/List';
+import Search from './components/Search';
 
+{/*
+// '.' significa o ditório atual
+// '/components' significa a pasta 'components'
+// ele busca esta pasta no diretório atual 
+*/}
+
+// list de 'stories'
 const list = [
   {
     title: 'React',
@@ -22,28 +27,42 @@ const list = [
     points: 5,
     objectID: 1,
   },
+  {
+    title: 'Redux',
+    url: 'https://redux.js.org/',
+    author: 'Dan Abramov, Andrew Clark',
+    num_comments: 2,
+    points: 5,
+    objectID: 2,
+  },
 ];
 
-function App(){
+// Por agora, estamos fazendo os componentes dentro do App.
+function App() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+
+  const handleChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  // Lógica de filtro
+  const filteredList = list.filter(
+    function (item){
+      return item.title.toLowerCase().includes(searchTerm.toLowerCase());
+    }
+  );
+
+  // renderizar elementos na tela
   return (
     <div>
+      <h1>Minhas Histórias Hacker</h1>
+      {/* Barra de busca */}
+      <Search onSearch={handleChange} searchTerm={searchTerm} />
+      <p>Mostrando resultados para "{searchTerm}"</p>
+      <hr /> {/* Printa uma linha */}n
 
-      <h1>Minhas historias Hacker</h1>
-
-      {/* barra de busca */}
-
-
-      <label htmlFor="search">Procurar:</label>
-      <input type="text" id="search" />
-
-     <hr />
-      {/*
-        <ListFunction listParameter={list}/>
-        O primeiro "List", é a função.
-        O segundo "list" é o parâmetro da função.
-        O terceiro "list", é a lista criada no início do código.
-      */}
-      <List list={list} />
+      <List list={filteredList}/>
     </div>
   );
 }

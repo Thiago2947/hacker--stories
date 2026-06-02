@@ -12,3 +12,4 @@ function List({list}){
     </ul>
   );
 }
+export default List;
