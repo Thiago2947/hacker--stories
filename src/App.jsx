@@ -10,88 +10,168 @@ import Search from './components/Search';
 */}
 
 
-// list de 'stories'
-const list = [
-  {
-    title: 'React',
-    url: 'https://reactjs.org/',
-    author: 'Jordan Walke',
-    num_comments: 3,
-    points: 4,
-    objectID: 0,
-  },
-  {
-    title: 'Redux',
-    url: 'https://redux.js.org/',
-    author: 'Dan Abramov, Andrew Clark',
-    num_comments: 2,
-    points: 5,
-    objectID: 1,
-  },
-  {
-    title: 'Redux',
-    url: 'https://redux.js.org/',
-    author: 'Dan Abramov, Andrew Clark',
-    num_comments: 2,
-    points: 5,
-    objectID: 2,
-  },
-];
-
-async function fetchData() {
-  try {
-    const response = await fetch("https://api.example.com/data");
-    const data = await response.json();
-    console.log(data);
-  } catch (error) {
-    console.error("Erro ao buscar dados:", error);
-  }
+function Search({ searchTerm, onSearch }) {
+  return (
+    <div>
+      <label htmlFor="search">Pesquisar: </label>
+      <input 
+        id="search" 
+        type="text" 
+        value={searchTerm} 
+        onChange={onSearch} 
+      />
+    </div>
+  );
 }
 
+function List({ list }) {
+  return (
+    <ul>
+      {list.map((item) => (
+        <Item key={item.objectID || item.id} item={item} />
+      ))}
+    </ul>
+  );
+}
+
+function Item({ item }) {
+  return (
+    <li>
+      <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a>
+      <span> por {item.author}</span>
+    </li>
+  );
+}
+
+// ==========================================
+// REACT 19 ACTIONS (Funções Assíncronas)
+// ==========================================
+
+/**
+ * Action para simular a adição de uma nova história.
+ * @param {Object} prevState - O estado anterior retornado pela action.
+ * @param {FormData} formData - Os dados nativos do formulário HTML.
+ */
+async function addStoryAction(prevState, formData) {
+  const title = formData.get('title');
+  const author = formData.get('author');
+
+  console.log('Simulando adição de história:', { title, author });
+
+  // Simula um atraso de rede (1 segundo)
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Validação simples de campos obrigatórios
+  if (!title || !author) {
+    return { 
+      success: false, 
+      message: 'Título e autor são obrigatórios!' 
+    };
+  }
+
+  // Em uma aplicação real, a requisição HTTP seria feita aqui:
+  // await fetch('/api/stories', { method: 'POST', body: formData });
+
+  return { 
+    success: true, 
+    message: `História '${title}' adicionada com sucesso!` 
+  };
+}
+
+// ==========================================
+// COMPONENTE PRINCIPAL (App)
+// ==========================================
+
 function App() {
+  // --- Estados do Filtro e Pesquisa ---
   const [searchTerm, setSearchTerm] = useState(
     localStorage.getItem('searchTerm') || ''
   );
-  const [stories, setStories] = useState([]); // Estado para as histórias da API
-  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
-  const [isError, setIsError] = useState(false); // Estado de erro
+
+  // --- Estados da API (Hacker News) ---
+  const [stories, setStories] = useState([]); 
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isError, setIsError] = useState(false); 
+
+  // --- Estado do Formulário (React 19 Action State) ---
+  const [submissionState, submitStoryAction] = useActionState(addStoryAction, null);
+
+  // --- Manipuladores de Evento ---
   const handleChange = (event) => {
     setSearchTerm(event.target.value);
   };
+
+  // --- Efeito 1: Persistir o termo de busca no LocalStorage ---
   useEffect(() => {
     localStorage.setItem('searchTerm', searchTerm);
   }, [searchTerm]);
-  // Efeito para buscar dados da API
+
+  // --- Efeito 2: Buscar dados da API do Hacker News ---
   useEffect(() => {
-    setIsLoading(true); // Inicia o estado de carregamento
-    setIsError(false); // Reseta o estado de erro
+    setIsLoading(true); 
+    setIsError(false); 
+
     fetch(`https://hn.algolia.com/api/v1/search?query=${searchTerm}`)
-      .then(response => response.json())
-      .then(result => {
-        setStories(result.hits); // Atualiza o estado com as histórias
-        setIsLoading(false); // Finaliza o estado de carregamento
+      .then((response) => response.json())
+      .then((result) => {
+        setStories(result.hits); 
+        setIsLoading(false); 
       })
       .catch(() => {
-        setIsError(true); // Define o estado de erro
-        setIsLoading(false); // Finaliza o estado de carregamento
+        setIsError(true); 
+        setIsLoading(false); 
       });
-  }, [searchTerm]); // Refaz a busca sempre que searchTerm muda
-  const filteredList = stories.filter(function (item) {
-    return item.title.toLowerCase().includes(searchTerm.toLowerCase());
+  }, [searchTerm]); 
+
+  // --- Filtragem local da lista baseada no termo de busca ---
+  const filteredList = stories.filter((item) => {
+    // Garante que o item possui um título válido antes de filtrar
+    return item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
   return (
-    <div>
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>Minhas Histórias Hacker</h1>
 
+      {/* Seção de Busca */}
       <Search onSearch={handleChange} searchTerm={searchTerm} />
       <hr />
-      {isError && <p>Algo deu errado ao carregar as histórias.</p>}
+
+      {/* Renderização Condicional dos Dados da API */}
+      {isError && <p style={{ color: 'red' }}>Algo deu errado ao carregar as histórias.</p>}
+      
       {isLoading ? (
         <p>Carregando histórias...</p>
       ) : (
         <List list={filteredList} />
       )}
+
+      <hr />
+
+      {/* Formulário utilizando o novo paradigma de Actions */}
+      <h2>Adicionar Nova História</h2>
+      <form action={submitStoryAction}>
+        <div style={{ marginBottom: '10px' }}>
+          <label htmlFor="title">Título: </label>
+          <input id="title" name="title" type="text" />
+        </div>
+        
+        <div style={{ marginBottom: '10px' }}>
+          <label htmlFor="author">Autor: </label>
+          <input id="author" name="author" type="text" />
+        </div>
+
+        <button type="submit">Adicionar</button>
+
+        {/* Feedback visual do envio do formulário */}
+        {submissionState && submissionState.message && (
+          <p style={{ color: submissionState.success ? 'green' : 'red', marginTop: '10px' }}>
+            {submissionState.message}
+          </p>
+        )}
+      </form>
     </div>
   );
 }
+
 export default App;
