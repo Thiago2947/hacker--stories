@@ -1,8 +1,7 @@
 import React, {useState, useEffect, useActionState} from 'react';
-import Item from './components/item';
-import List from './components/List';
-import Search from './components/Search';
-import useSemiPersistentState from './hooks/useSemiPersistentState';
+import List from './src/components/List';
+import Search from './src/components/Search';
+import useSemiPersistentState from './src/hooks/useSemiPersistentState';
 import styles from './App.module.css';
 
 // Action para simular a adição de uma story no banco de dados
@@ -26,8 +25,8 @@ async function addStoryAction(prevState, formData){
 
 function App() {
 
-  const [searchTerm, setSearchTerm] = useState(
-    localStorage.getItem('searchTerm') || ''
+  const [searchTerm, setSearchTerm] = useSemiPersistentState(
+    'searchTerm' || ''
   );
 
   const [stories, setStories] = useState([]);          // estados das stories
