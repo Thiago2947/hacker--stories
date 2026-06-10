@@ -37,9 +37,6 @@ function App() {
   const [submissionState, submissionStoryAction] = useActionState(addStoryAction, null);
 
   
-
-
-
   const handleChange = (event) => {
     setSearchTerm(event.target.value);
   };
