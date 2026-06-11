@@ -1,4 +1,4 @@
-import Item from './item';
+import Item from './Item';
 
 {/* Lista não ordenada que imprime os itens */}
 function List({list}){
